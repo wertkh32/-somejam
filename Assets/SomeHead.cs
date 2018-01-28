@@ -17,10 +17,13 @@ public class SomeHead : MonoBehaviour
 	public Sprite trembleSprite;
 	public Sprite sneezeSprite;
 	public Sprite spitSprite;
+	public Sprite winSprite;
+	public Sprite loseSprite;
+
 	public Sprite grannyNormal;
 	public Sprite grannyHit;
 	public Sprite grannyConfused;
-	public Sprite grannySad;
+	public Sprite grannySneeze;
 
 	public SomeGrannyGod grannyGod;
 
@@ -30,6 +33,7 @@ public class SomeHead : MonoBehaviour
 
 	bool isTouching;
 	int prevTouchCount;
+	int curTouchCount;
 
 	float sneezeStart;
 	bool sneezeStarted;
@@ -39,7 +43,7 @@ public class SomeHead : MonoBehaviour
 	GameObject aimer;
 	Collider2D aimerCollider;
 	List<GameObject> hitGrannies = new List<GameObject>();
-
+	List<GameObject> allGrannies = new List<GameObject>();
 
 	bool spitCoroutineEntered;
 
@@ -58,6 +62,7 @@ public class SomeHead : MonoBehaviour
 	void Start () {
 		isTouching = false;
 		prevTouchCount = 0;
+		curTouchCount = 0;
 
 		sneezeStart = Time.time;
 		bool sneezeStarted = false;
@@ -70,6 +75,7 @@ public class SomeHead : MonoBehaviour
 		aimerCollider = GameObject.Find ("AimerSprite").GetComponent<Collider2D> ();
 
 		DisableSneeze ();
+		StartCoroutine (AutoSneeze ());
 	}
 
 	void PullHead( Vector2 fingerPos )
@@ -146,13 +152,6 @@ public class SomeHead : MonoBehaviour
 		aimer.transform.localRotation = Quaternion.Euler (new Vector3 (0, 0, angle));
 	}
 
-
-	void SpitAtAGrannyEvent( GameObject granny )
-	{
-		granny.GetComponent<SpriteRenderer> ().sprite = grannyHit;
-	}
-
-
 	void StopAllGrannies( bool stop )
 	{
 		foreach (GameObject grannyGroupObj in grannyGod.Grannies) 
@@ -169,8 +168,25 @@ public class SomeHead : MonoBehaviour
 	}
 
 
-	IEnumerator SneezeSomeGrannies()
+	void GetAllGrannies()
 	{
+		allGrannies.Clear ();
+		foreach (GameObject grannyGroupObj in grannyGod.Grannies) 
+		{
+			SomeGranny grannyGroup = grannyGroupObj.GetComponent<SomeGranny> ();
+
+			foreach (GameObject granny in grannyGroup.Grannies) 
+			{
+				allGrannies.Add (granny);
+			}
+		}
+	}
+
+
+	IEnumerator SneezeSomeGrannies( bool autoLose )
+	{
+		bool anyGranniesHit = false;
+
 		if (spitCoroutineEntered)
 			yield break;
 
@@ -179,49 +195,83 @@ public class SomeHead : MonoBehaviour
 		head.GetComponent<SpriteRenderer>().sprite = spitSprite;
 
 		hitGrannies.Clear ();
+		GetAllGrannies ();
 
 		StopAllGrannies ( true );
 
-		foreach (GameObject grannyGroupObj in grannyGod.Grannies) 
+		if (autoLose) 
 		{
-			SomeGranny grannyGroup = grannyGroupObj.GetComponent<SomeGranny> ();
-			grannyGroup.start = false;
+			anyGranniesHit = true;
+			foreach (GameObject granny in allGrannies) 
+				hitGrannies.Add (granny);
+		}
 
-			foreach (GameObject granny in grannyGroup.Grannies) 
+		//check for granny collision
+		foreach (GameObject granny in allGrannies) 
+		{
+			Collider2D grannyCollider = granny.GetComponent<Collider2D> ();
+
+			if (grannyCollider.IsTouching (aimerCollider)) 
 			{
-				Collider2D grannyCollider = granny.GetComponent<Collider2D> ();
-
-				if (grannyCollider.IsTouching (aimerCollider)) 
-				{
-					Debug.Log ("I hit a granny");
-					hitGrannies.Add (granny);
-				}
+				Debug.Log ("I hit a granny");
+				hitGrannies.Add (granny);
+				anyGranniesHit = true;
 			}
 		}
 
 
-		foreach (GameObject granny in hitGrannies) 
+		if (anyGranniesHit) 
 		{
-			SpitAtAGrannyEvent (granny);
-		}
-
-		yield return new WaitForSeconds (0.6f);
-
-		head.GetComponent<SpriteRenderer>().sprite = normalSprite;
-		aimer.SetActive (false);
-
-
-		{//granny aftermath
+			// lose this level
 			foreach (GameObject granny in hitGrannies) 
+			{
+				granny.GetComponent<SpriteRenderer> ().sprite = grannyHit;
+			}
+
+			yield return new WaitForSeconds (0.6f);
+
+			head.GetComponent<SpriteRenderer>().sprite = normalSprite;
+			aimer.SetActive (false);
+
+			foreach (GameObject granny in hitGrannies) 
+			{
+				granny.GetComponent<SpriteRenderer> ().sprite = grannySneeze;
+			}
+
+			yield return new WaitForSeconds (0.5f);
+			// process lose condition
+			head.GetComponent<SpriteRenderer>().sprite = loseSprite;
+
+			yield return new WaitForSeconds (3.0f);
+
+		} 
+		else 
+		{
+			// win this level
+			foreach (GameObject granny in allGrannies) 
 			{
 				granny.GetComponent<SpriteRenderer> ().sprite = grannyConfused;
 				granny.GetComponent<Animator> ().enabled = true;
 				granny.GetComponent<Animator> ().speed = 0.2f;
 			}
 
-			yield return new WaitForSeconds (2.0f);
+			yield return new WaitForSeconds (0.6f);
 
-			foreach (GameObject granny in hitGrannies) 
+			head.GetComponent<SpriteRenderer>().sprite = normalSprite;
+			aimer.SetActive (false);
+
+			yield return new WaitForSeconds (0.5f);
+			//process win condition
+			head.GetComponent<SpriteRenderer>().sprite = winSprite;
+
+			yield return new WaitForSeconds (3.0f);
+		}
+
+		{	//granny aftermath: on to next level
+
+			head.GetComponent<SpriteRenderer>().sprite = normalSprite;
+
+			foreach (GameObject granny in allGrannies) 
 			{
 				granny.GetComponent<SpriteRenderer> ().sprite = grannyNormal;
 			}
@@ -232,15 +282,19 @@ public class SomeHead : MonoBehaviour
 		}
 
 		spitCoroutineEntered = false;
+		isTouching = false;
 	}
 
 
-	void ReleaseHead()
+	void ReleaseHead( bool autoLose )
 	{
+		if (spitCoroutineEntered)
+			return;
+
 		Debug.Log ("Head Released");
 		nose.SetActive (false);
 
-		StartCoroutine (SneezeSomeGrannies ());
+		StartCoroutine (SneezeSomeGrannies ( autoLose ));
 	}
 
 	void BeginPullHead()
@@ -250,11 +304,44 @@ public class SomeHead : MonoBehaviour
 		EnableSneeze ();
 	}
 
+
+	IEnumerator AutoSneeze()
+	{
+		float duration = 0.0f;
+
+		while (true) 
+		{
+			duration += Time.deltaTime;
+
+			if (duration > 10.0f) 
+			{
+				duration = 0.0f;
+				aimer.SetActive (true);
+
+				bool autoLose = curTouchCount == 0;
+
+				if(autoLose)
+					aimer.transform.localScale = new Vector3 (3.0f, 3.0f, 1.0f);
+
+				ReleaseHead ( autoLose );
+			}
+
+			if (spitCoroutineEntered) 
+			{
+				duration = 0.0f;
+			}
+
+			yield return new WaitForEndOfFrame();
+		}
+	}
+
+
 	void ProcessInputTouch()
 	{
 		int touchCount;
 
 		touchCount = Input.touchCount;
+		curTouchCount = touchCount;
 
 		if (spitCoroutineEntered)
 			return;
@@ -270,7 +357,7 @@ public class SomeHead : MonoBehaviour
 		{
 			if (isTouching) 
 			{
-				ReleaseHead ();			
+				ReleaseHead ( false );			
 			}
 
 			isTouching = false;

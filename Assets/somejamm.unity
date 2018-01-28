@@ -549,14 +549,11 @@ EdgeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
   m_Points:
-  - {x: 0.13703766, y: -4.6082115}
-  - {x: -3.4821022, y: -1.2405806}
-  - {x: -6.424707, y: 1.7550869}
-  - {x: -4.076371, y: 3.4818144}
-  - {x: -0.8063248, y: 4.7039433}
-  - {x: 2.7531626, y: 4.152773}
-  - {x: 6.317164, y: 1.5236845}
-  - {x: 0.23459207, y: -4.6082115}
+  - {x: -6.0636697, y: 1.9133043}
+  - {x: 0.08870602, y: 4.859789}
+  - {x: 6.232076, y: 1.7062778}
+  - {x: 0.28028914, y: -4.905786}
+  - {x: -6.104932, y: 1.7219734}
 --- !u!114 &860843662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -620,10 +617,12 @@ MonoBehaviour:
   trembleSprite: {fileID: 21300000, guid: c1fc9d298cc3263419be0ab9487e4606, type: 3}
   sneezeSprite: {fileID: 21300000, guid: cb21491ff571c554aaef5c848b2316b4, type: 3}
   spitSprite: {fileID: 21300000, guid: 14f0c9bc5bf5b884a82f448f74bf7815, type: 3}
+  winSprite: {fileID: 21300000, guid: 9a124f9dfa9150e4f9301d92f9488508, type: 3}
+  loseSprite: {fileID: 21300000, guid: 5272b664ca51493499bc6b2c531fee2f, type: 3}
   grannyNormal: {fileID: 21300000, guid: 2c0c03a7d8a8edb48a683a871b9b71e7, type: 3}
   grannyHit: {fileID: 21300000, guid: 1f3c802dff5170e47bda1784ddfc4f69, type: 3}
   grannyConfused: {fileID: 21300000, guid: 18da9d2887531d64592bb3e6ed18ab7b, type: 3}
-  grannySad: {fileID: 21300000, guid: 235425800373488498c606810be8ca27, type: 3}
+  grannySneeze: {fileID: 21300000, guid: 235425800373488498c606810be8ca27, type: 3}
   grannyGod: {fileID: 1860281917}
 --- !u!4 &1048936928
 Transform:
