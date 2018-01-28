@@ -13,23 +13,49 @@ class aimer
 public class SomeHead : MonoBehaviour 
 {
 	public Camera camera;
-	const float EXPAND_SCALE = 100.0f;
+	public Sprite normalSprite;
+	public Sprite trembleSprite;
+	public Sprite sneezeSprite;
+	public Sprite spitSprite;
+
+	const float EXPAND_SCALE = 200.0f;
 	const bool DEVELOPMENT_BUILD = false;
 	// Use this for initialization
+
 	bool isTouching;
+	int prevTouchCount;
 
 	float sneezeStart;
 	bool sneezeStarted;
 
 	GameObject head;
+	GameObject nose;
 	GameObject aimer;
+
+	void EnableSneeze()
+	{
+		aimer.SetActive (true);
+		nose.SetActive (true);
+	}
+
+	void DisableSneeze()
+	{
+		aimer.SetActive (false);
+		nose.SetActive (false);
+	}
 
 	void Start () {
 		isTouching = false;
+		prevTouchCount = 0;
+
 		sneezeStart = Time.time;
 		bool sneezeStarted = false;
+
 		head = GameObject.Find ("HeadSprite");
+		nose = GameObject.Find ("NoseSprite");
 		aimer = GameObject.Find ("Aimer");
+
+		DisableSneeze ();
 	}
 	
 
@@ -40,6 +66,38 @@ public class SomeHead : MonoBehaviour
 		//transform.position = worldPos;
 		Debug.Log ("Head pull down");
 	}
+
+	void ScaleNose( float varyScale )
+	{
+		float expandSize;
+		float expandSizeInv;
+
+		expandSize = 0.5f + varyScale * 2.0f;
+
+		nose.transform.localScale = new Vector3 ( expandSize, expandSize, 1.0f );
+	}
+
+
+	void ScaleAimer( float varyScale )
+	{
+		float expandSize;
+		float expandSizeInv;
+		float invVaryScale;
+
+		invVaryScale = 1.0f - varyScale;
+
+		expandSize = 0.5f + varyScale;
+		expandSizeInv = 0.5f + invVaryScale;
+
+		if( invVaryScale > 0.5f )
+		{
+			expandSize = 0.3f + varyScale;
+			expandSizeInv = 0.5f + invVaryScale * 2.0f;
+		}
+
+		aimer.transform.localScale = new Vector3 (expandSize, expandSizeInv, 1.0f);
+	}
+
 
 	void ExpandNose( Vector2[] fingersPos )
 	{
@@ -54,13 +112,10 @@ public class SomeHead : MonoBehaviour
 		diffMag = diff.magnitude;
 
 		varyScale = Mathf.Clamp01( diffMag / EXPAND_SCALE );
-		invVaryScale = 1.0f - varyScale;
+		varyScale *= varyScale * varyScale;
 
-		expandSize = 0.5f + varyScale;
-		expandSizeInv = 0.5f + invVaryScale;
-
-		head.transform.localScale = new Vector3 ( expandSize, expandSize, 1.0f );
-		aimer.transform.localScale = new Vector3 (expandSize, expandSizeInv * 1.5f, 1.0f);
+		ScaleNose (varyScale);
+		ScaleAimer (varyScale);
 	}
 
 	void RotateHead( Vector2[] fingersPos )
@@ -81,6 +136,15 @@ public class SomeHead : MonoBehaviour
 	void ReleaseHead()
 	{
 		Debug.Log ("Head Released");
+		head.GetComponent<SpriteRenderer>().sprite = normalSprite;
+		DisableSneeze ();
+	}
+
+	void BeginPullHead()
+	{
+		Debug.Log ("Head Pull Begin");
+		head.GetComponent<SpriteRenderer>().sprite = sneezeSprite;
+		EnableSneeze ();
 	}
 
 	void ProcessInputTouch()
@@ -88,6 +152,13 @@ public class SomeHead : MonoBehaviour
 		int touchCount;
 
 		touchCount = Input.touchCount;
+
+		if (touchCount > 1 && touchCount > prevTouchCount) 
+		{
+			// can do touch start changes here
+			BeginPullHead();
+		}
+			
 
 		if (touchCount == 0) 
 		{
@@ -108,7 +179,8 @@ public class SomeHead : MonoBehaviour
 
 		if( touchCount > 1 )
 		{
-			Vector2[] twoFingers = { Input.GetTouch (0).position, Input.GetTouch (1).position };
+			Vector2[] twoFingers = { Input.GetTouch (0).position,
+									 Input.GetTouch (1).position };
 
 			{
 				if (twoFingers [0].x > twoFingers [1].x) 
@@ -127,6 +199,8 @@ public class SomeHead : MonoBehaviour
 
 			Debug.Log ("Many touch");
 		}
+
+		prevTouchCount = touchCount;
 	}
 
 
