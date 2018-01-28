@@ -3,21 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+class aimer
+{
+	float radius;
+	float angle;
+}
+
+
 public class SomeHead : MonoBehaviour 
 {
 	public Camera camera;
 	const float EXPAND_SCALE = 100.0f;
 	const bool DEVELOPMENT_BUILD = false;
+	const Vector2 center = new Vector2( 0, -1 );
 	// Use this for initialization
 	bool isTouching;
 
 	float sneezeStart;
 	bool sneezeStarted;
 
+	GameObject head;
+	GameObject aimer;
+
 	void Start () {
 		isTouching = false;
 		sneezeStart = Time.time;
 		bool sneezeStarted = false;
+		head = GameObject.Find ("HeadSprite");
+		aimer = GameObject.Find ("Aimer");
 	}
 	
 
@@ -25,7 +38,7 @@ public class SomeHead : MonoBehaviour
 	{
 		Vector3 screenSpace = new Vector3 (fingerPos.x, fingerPos.y, 1.0f);
 		Vector3 worldPos = camera.ScreenToWorldPoint( screenSpace );
-		transform.position = worldPos;
+		//transform.position = worldPos;
 		Debug.Log ("Head pull down");
 	}
 
@@ -34,13 +47,36 @@ public class SomeHead : MonoBehaviour
 		Vector2 diff;
 		float diffMag;
 		float expandSize;
+		float expandSizeInv;
+		float varyScale;
+		float invVaryScale;
 
 		diff = fingersPos [0] - fingersPos[1];
 		diffMag = diff.magnitude;
 
-		expandSize = 1.0f + diffMag / EXPAND_SCALE;
+		varyScale = Mathf.Clamp01( diffMag / EXPAND_SCALE );
+		invVaryScale = 1.0f - varyScale;
 
-		this.transform.localScale = new Vector3 ( expandSize, expandSize, expandSize );
+		expandSize = 0.5f + varyScale;
+		expandSizeInv = 0.5f + invVaryScale;
+
+		head.transform.localScale = new Vector3 ( expandSize, expandSize, 1.0f );
+		aimer.transform.localScale = new Vector3 (expandSize, expandSizeInv * 1.5f, 1.0f);
+	}
+
+	void RotateHead( Vector2[] fingersPos )
+	{
+		Vector2 diff;
+		float angle;
+		Quaternion quat;
+
+		diff = fingersPos [1] - fingersPos[0];
+		
+		angle = (Mathf.Atan2 (diff.y, diff.x) / Mathf.PI) * 180.0f;
+
+		angle = Mathf.Clamp (angle, -60.0f, 60.0f);
+
+		aimer.transform.localRotation = Quaternion.Euler (new Vector3 (0, 0, angle));
 	}
 
 	void ReleaseHead()
@@ -75,8 +111,20 @@ public class SomeHead : MonoBehaviour
 		{
 			Vector2[] twoFingers = { Input.GetTouch (0).position, Input.GetTouch (1).position };
 
+			{
+				if (twoFingers [0].x > twoFingers [1].x) 
+				{
+					Vector2 tmp = twoFingers [0];
+					twoFingers [0] = twoFingers [1];
+					twoFingers [1] = tmp;
+				}
+			}
+
+
 			isTouching = true;
+			RotateHead (twoFingers);
 			ExpandNose ( twoFingers );
+
 
 			Debug.Log ("Many touch");
 		}
