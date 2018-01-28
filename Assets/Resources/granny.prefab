@@ -20,9 +20,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4372990061433200}
   - component: {fileID: 212586457029277794}
-  - component: {fileID: 114090526158791604}
+  - component: {fileID: 95095328081425144}
+  - component: {fileID: 114758797571420886}
   m_Layer: 0
-  m_Name: dude
+  m_Name: granny
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35,13 +36,30 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1108021929183640}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.2, y: -0.001, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114090526158791604
+--- !u!95 &95095328081425144
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1108021929183640}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 9e5b06f4f1b7f66469dfc08f84683812, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &114758797571420886
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -49,9 +67,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1108021929183640}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bda093de97985574c81feb62c2569f64, type: 3}
+  m_Script: {fileID: 11500000, guid: 19fd1b0401b4df74c9efb95cd5565338, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cam: {fileID: 0}
+  speed: 0.01
+  minStep: 10
+  maxStep: 50
 --- !u!212 &212586457029277794
 SpriteRenderer:
   m_ObjectHideFlags: 1
