@@ -2,14 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-class aimer
-{
-	float radius;
-	float angle;
-}
-
-
 public class SomeHead : MonoBehaviour 
 {
 	public Camera camera;
@@ -26,6 +18,9 @@ public class SomeHead : MonoBehaviour
 	public Sprite grannySneeze;
 
 	public SomeGrannyGod grannyGod;
+
+	const float SNEEZE_TIME = 8.0f;
+	const float SNEEZE_TIME_START_PERCENT = 0.5f;
 
 	const float EXPAND_SCALE = 200.0f;
 	const bool DEVELOPMENT_BUILD = false;
@@ -183,6 +178,24 @@ public class SomeHead : MonoBehaviour
 	}
 
 
+	void UpdateProgressBar( float percentage )
+	{
+		
+	}
+
+
+	void ProcessLoseCondition()
+	{
+		
+	}
+
+
+	void ProcessWinCondition()
+	{
+		
+	}
+
+
 	IEnumerator SneezeSomeGrannies( bool autoLose )
 	{
 		bool anyGranniesHit = false;
@@ -198,6 +211,7 @@ public class SomeHead : MonoBehaviour
 		GetAllGrannies ();
 
 		StopAllGrannies ( true );
+		aimer.SetActive ( true );
 
 		if (autoLose) 
 		{
@@ -243,7 +257,7 @@ public class SomeHead : MonoBehaviour
 			head.GetComponent<SpriteRenderer>().sprite = loseSprite;
 
 			yield return new WaitForSeconds (3.0f);
-
+			ProcessLoseCondition ();
 		} 
 		else 
 		{
@@ -263,8 +277,9 @@ public class SomeHead : MonoBehaviour
 			yield return new WaitForSeconds (0.5f);
 			//process win condition
 			head.GetComponent<SpriteRenderer>().sprite = winSprite;
-
 			yield return new WaitForSeconds (3.0f);
+
+			ProcessWinCondition ();
 		}
 
 		{	//granny aftermath: on to next level
@@ -281,6 +296,7 @@ public class SomeHead : MonoBehaviour
 			grannyGod.SpawnGrannies (1);
 		}
 
+		sneezeStarted = false;
 		spitCoroutineEntered = false;
 		isTouching = false;
 	}
@@ -308,15 +324,16 @@ public class SomeHead : MonoBehaviour
 	IEnumerator AutoSneeze()
 	{
 		float duration = 0.0f;
+		float percentage = 0.0f;
 
 		while (true) 
 		{
 			duration += Time.deltaTime;
+			percentage = Mathf.Clamp01 (duration / SNEEZE_TIME);
 
-			if (duration > 10.0f) 
+			if (duration > SNEEZE_TIME) 
 			{
 				duration = 0.0f;
-				aimer.SetActive (true);
 
 				bool autoLose = curTouchCount == 0;
 
@@ -331,6 +348,13 @@ public class SomeHead : MonoBehaviour
 				duration = 0.0f;
 			}
 
+			UpdateProgressBar ( percentage );
+
+			if ( !sneezeStarted && percentage > SNEEZE_TIME_START_PERCENT ) 
+			{
+				sneezeStarted = true;
+				head.GetComponent<SpriteRenderer> ().sprite = trembleSprite;
+			}
 			yield return new WaitForEndOfFrame();
 		}
 	}
@@ -349,13 +373,14 @@ public class SomeHead : MonoBehaviour
 		if (touchCount > 1 && touchCount > prevTouchCount) 
 		{
 			// can do touch start changes here
-			BeginPullHead();
+			if( sneezeStarted )
+				BeginPullHead();
 		}
 			
 
 		if (touchCount == 0) 
 		{
-			if (isTouching) 
+			if (sneezeStarted && isTouching) 
 			{
 				ReleaseHead ( false );			
 			}
@@ -364,13 +389,13 @@ public class SomeHead : MonoBehaviour
 			return;
 		}
 
-		if (touchCount >= 1) 
+		if ( sneezeStarted && touchCount >= 1 ) 
 		{
 			isTouching = true;
 			PullHead (Input.GetTouch (0).position);
 		}
 
-		if( touchCount > 1 )
+		if( sneezeStarted && touchCount > 1 )
 		{
 			Vector2[] twoFingers = { Input.GetTouch (0).position,
 									 Input.GetTouch (1).position };
