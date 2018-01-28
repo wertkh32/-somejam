@@ -15,7 +15,6 @@ public class SomeHead : MonoBehaviour
 	public Camera camera;
 	const float EXPAND_SCALE = 100.0f;
 	const bool DEVELOPMENT_BUILD = false;
-	const Vector2 center = new Vector2( 0, -1 );
 	// Use this for initialization
 	bool isTouching;
 
