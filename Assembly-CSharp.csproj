@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\AimerCollision.cs" />
      <Compile Include="Assets\Movement.cs" />
      <Compile Include="Assets\SomeDude.cs" />
      <Compile Include="Assets\SomeFlip.cs" />
