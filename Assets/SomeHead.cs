@@ -19,12 +19,22 @@ public class SomeHead : MonoBehaviour
 
 	public SomeGrannyGod grannyGod;
 
-	const float SNEEZE_TIME = 8.0f;
-	const float SNEEZE_TIME_START_PERCENT = 0.5f;
+	const float TIME_BEFORE_TREMBLE = 5.0f;
+	const float TIME_BEFORE_SNEEZE = 5.0f;
+	const float TIME_LOSS_BY_LEVEL = 0.5f;
+	const float TIME_LOSS_BY_LIFE = 1.0f;
+	const int LIVES_AT_START = 3;
 
 	const float EXPAND_SCALE = 200.0f;
 	const bool DEVELOPMENT_BUILD = false;
 	// Use this for initialization
+
+	float timeBeforeTremble;
+	float timeBeforeSneeze;
+	float totalTimeBeforeSneeze;
+
+	int lives;
+	int level;
 
 	bool isTouching;
 	int prevTouchCount;
@@ -54,10 +64,29 @@ public class SomeHead : MonoBehaviour
 		nose.SetActive (false);
 	}
 
+
+	void RecalculateTimers()
+	{
+		timeBeforeTremble = TIME_BEFORE_TREMBLE - TIME_LOSS_BY_LEVEL * (level - 1);
+		timeBeforeTremble = timeBeforeTremble < 0.0f ? 0.0f : timeBeforeTremble;
+
+		timeBeforeSneeze = TIME_BEFORE_SNEEZE - TIME_LOSS_BY_LIFE * ( LIVES_AT_START - lives );
+
+		totalTimeBeforeSneeze = timeBeforeSneeze + timeBeforeTremble;
+
+		Debug.Log ("Time before sneeze:" + timeBeforeSneeze + " " + "Time Before Tremble:" + timeBeforeTremble);
+	}
+
+
 	void Start () {
 		isTouching = false;
 		prevTouchCount = 0;
 		curTouchCount = 0;
+
+		lives = LIVES_AT_START;
+		level = 1;
+
+		RecalculateTimers ();
 
 		sneezeStart = Time.time;
 		bool sneezeStarted = false;
@@ -186,7 +215,18 @@ public class SomeHead : MonoBehaviour
 
 	void ProcessLoseCondition()
 	{
-		
+		if (lives == 0) 
+		{
+			//???
+			return;
+		}
+
+		lives--;
+
+		if (lives == 0) 
+		{
+			// end game condition here
+		}
 	}
 
 
@@ -296,6 +336,8 @@ public class SomeHead : MonoBehaviour
 			grannyGod.SpawnGrannies (1);
 		}
 
+		level++;
+		RecalculateTimers ();
 		sneezeStarted = false;
 		spitCoroutineEntered = false;
 		isTouching = false;
@@ -329,9 +371,9 @@ public class SomeHead : MonoBehaviour
 		while (true) 
 		{
 			duration += Time.deltaTime;
-			percentage = Mathf.Clamp01 (duration / SNEEZE_TIME);
+			percentage = Mathf.Clamp01 (duration / totalTimeBeforeSneeze);
 
-			if (duration > SNEEZE_TIME) 
+			if (duration > totalTimeBeforeSneeze) 
 			{
 				duration = 0.0f;
 
@@ -350,7 +392,7 @@ public class SomeHead : MonoBehaviour
 
 			UpdateProgressBar ( percentage );
 
-			if ( !sneezeStarted && percentage > SNEEZE_TIME_START_PERCENT ) 
+			if ( !sneezeStarted && duration > timeBeforeTremble ) 
 			{
 				sneezeStarted = true;
 				head.GetComponent<SpriteRenderer> ().sprite = trembleSprite;
