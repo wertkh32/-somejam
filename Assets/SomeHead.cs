@@ -19,6 +19,9 @@ public class SomeHead : MonoBehaviour
 	public Sprite spitSprite;
 	public Sprite grannyNormal;
 	public Sprite grannyHit;
+	public Sprite grannyConfused;
+	public Sprite grannySad;
+
 	public SomeGrannyGod grannyGod;
 
 	const float EXPAND_SCALE = 200.0f;
@@ -150,6 +153,22 @@ public class SomeHead : MonoBehaviour
 	}
 
 
+	void StopAllGrannies( bool stop )
+	{
+		foreach (GameObject grannyGroupObj in grannyGod.Grannies) 
+		{
+			SomeGranny grannyGroup = grannyGroupObj.GetComponent<SomeGranny> ();
+			grannyGroup.start = !stop;
+
+			foreach (GameObject granny in grannyGroup.Grannies) 
+			{
+				granny.GetComponent<Animator> ().enabled = !stop;
+				granny.GetComponent<Animator> ().speed = 1.0f;
+			}
+		}
+	}
+
+
 	IEnumerator SneezeSomeGrannies()
 	{
 		if (spitCoroutineEntered)
@@ -160,13 +179,18 @@ public class SomeHead : MonoBehaviour
 		head.GetComponent<SpriteRenderer>().sprite = spitSprite;
 
 		hitGrannies.Clear ();
+
+		StopAllGrannies ( true );
+
 		foreach (GameObject grannyGroupObj in grannyGod.Grannies) 
 		{
 			SomeGranny grannyGroup = grannyGroupObj.GetComponent<SomeGranny> ();
+			grannyGroup.start = false;
 
 			foreach (GameObject granny in grannyGroup.Grannies) 
 			{
 				Collider2D grannyCollider = granny.GetComponent<Collider2D> ();
+
 				if (grannyCollider.IsTouching (aimerCollider)) 
 				{
 					Debug.Log ("I hit a granny");
@@ -181,18 +205,31 @@ public class SomeHead : MonoBehaviour
 			SpitAtAGrannyEvent (granny);
 		}
 
-		yield return new WaitForSeconds (0.5f);
+		yield return new WaitForSeconds (0.6f);
 
-
-		//granny aftermath
 		head.GetComponent<SpriteRenderer>().sprite = normalSprite;
 		aimer.SetActive (false);
 
-		foreach (GameObject granny in hitGrannies) 
-		{
-			granny.GetComponent<SpriteRenderer> ().sprite = grannyNormal;
-		}
 
+		{//granny aftermath
+			foreach (GameObject granny in hitGrannies) 
+			{
+				granny.GetComponent<SpriteRenderer> ().sprite = grannyConfused;
+				granny.GetComponent<Animator> ().enabled = true;
+				granny.GetComponent<Animator> ().speed = 0.2f;
+			}
+
+			yield return new WaitForSeconds (2.0f);
+
+			foreach (GameObject granny in hitGrannies) 
+			{
+				granny.GetComponent<SpriteRenderer> ().sprite = grannyNormal;
+			}
+
+			StopAllGrannies (false);
+			grannyGod.KillGrannies ();
+			grannyGod.SpawnGrannies (1);
+		}
 
 		spitCoroutineEntered = false;
 	}

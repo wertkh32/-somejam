@@ -11,16 +11,24 @@ public class SomeGranny : MonoBehaviour
     private Coroutine moveRoutine;
     private Coroutine splitRoutine;
     public List<GameObject> Grannies = new List<GameObject>();
+	public bool start;
     // Use this for initialization
     void Awake()
     {
         cam = FindObjectOfType<Camera>();
+		start = true;
     }
     IEnumerator Move(Vector3 dir, float speed, int step)
     {
         int currentStep = step;
         while (currentStep > 0)
         {
+			if (!start) 
+			{
+				yield return new WaitForEndOfFrame ();
+				continue;			
+			}
+
             Vector3 vp = cam.WorldToViewportPoint(transform.position);
             currentStep -= 1;
             vp += speed * dir;
@@ -39,6 +47,12 @@ public class SomeGranny : MonoBehaviour
         int seed = Random.Range(0, 100);
         while (currentStep > 0)
         {
+			if (!start) 
+			{
+				yield return new WaitForEndOfFrame ();
+				continue;
+			}
+
             if (seed > 0)
             {
                 if (currentStep > step / 2)

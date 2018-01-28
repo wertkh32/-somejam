@@ -33,7 +33,7 @@ public class SomeGrannyGod : MonoBehaviour
         }
         return grannyGroup;
     }
-    void SpawnGrannies(int n)
+    public void SpawnGrannies(int n)
     {
         for (int i = 0; i < n; ++i)
         {
@@ -41,12 +41,14 @@ public class SomeGrannyGod : MonoBehaviour
         }
     }
 
-    void KillGrannies()
+    public void KillGrannies()
     {
         foreach (GameObject granny in Grannies)
         {
             DestroyObject(granny);
         }
+
+		Grannies.Clear ();
     }
 
     // Update is called once per frame

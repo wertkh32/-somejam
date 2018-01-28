@@ -622,6 +622,8 @@ MonoBehaviour:
   spitSprite: {fileID: 21300000, guid: 14f0c9bc5bf5b884a82f448f74bf7815, type: 3}
   grannyNormal: {fileID: 21300000, guid: 2c0c03a7d8a8edb48a683a871b9b71e7, type: 3}
   grannyHit: {fileID: 21300000, guid: 1f3c802dff5170e47bda1784ddfc4f69, type: 3}
+  grannyConfused: {fileID: 21300000, guid: 18da9d2887531d64592bb3e6ed18ab7b, type: 3}
+  grannySad: {fileID: 21300000, guid: 235425800373488498c606810be8ca27, type: 3}
   grannyGod: {fileID: 1860281917}
 --- !u!4 &1048936928
 Transform:
