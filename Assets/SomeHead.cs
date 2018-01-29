@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SomeHead : MonoBehaviour 
 {
@@ -18,6 +19,11 @@ public class SomeHead : MonoBehaviour
 	public Sprite grannySneeze;
 
 	public SomeGrannyGod grannyGod;
+	public RectTransform progressBarMask;
+	float progressBarInitRight;
+	float progressBarInitWidth;
+	public Text scoreText;
+	public Text lifeText;
 
 	const float TIME_BEFORE_TREMBLE = 5.0f;
 	const float TIME_BEFORE_SNEEZE = 5.0f;
@@ -35,6 +41,7 @@ public class SomeHead : MonoBehaviour
 
 	int lives;
 	int level;
+	int score;
 
 	bool isTouching;
 	int prevTouchCount;
@@ -81,11 +88,17 @@ public class SomeHead : MonoBehaviour
 		isTouching = false;
 		prevTouchCount = 0;
 		curTouchCount = 0;
+		score = 0;
 
 		lives = LIVES_AT_START;
 		level = 1;
 
 		RecalculateTimers ();
+		scoreText.text = score.ToString ();;
+		lifeText.text = lives.ToString();
+
+		progressBarInitWidth = Mathf.Abs( progressBarMask.offsetMax.x - progressBarMask.offsetMin.x ) * 1.2f;
+		progressBarInitRight = progressBarMask.offsetMax.x - progressBarInitWidth;
 
 		sneezeStart = Time.time;
 		bool sneezeStarted = false;
@@ -208,7 +221,9 @@ public class SomeHead : MonoBehaviour
 
 	void UpdateProgressBar( float percentage )
 	{
-		
+		Debug.Log ("right " + progressBarInitRight + "width " + progressBarInitWidth);
+		progressBarMask.offsetMax = new Vector2( progressBarInitRight + progressBarInitWidth * percentage, progressBarMask.offsetMax.y );
+
 	}
 
 
@@ -221,6 +236,8 @@ public class SomeHead : MonoBehaviour
 		}
 
 		lives--;
+		lifeText.text = lives.ToString ();
+
 
 		if (lives == 0) 
 		{
@@ -231,7 +248,8 @@ public class SomeHead : MonoBehaviour
 
 	void ProcessWinCondition()
 	{
-		
+		score++;
+		scoreText.text = score.ToString ();
 	}
 
 
