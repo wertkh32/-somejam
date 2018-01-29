@@ -71,7 +71,6 @@ public class SomeHead : MonoBehaviour
 		timeBeforeTremble = timeBeforeTremble < 0.0f ? 0.0f : timeBeforeTremble;
 
 		timeBeforeSneeze = TIME_BEFORE_SNEEZE - TIME_LOSS_BY_LIFE * ( LIVES_AT_START - lives );
-
 		totalTimeBeforeSneeze = timeBeforeSneeze + timeBeforeTremble;
 
 		Debug.Log ("Time before sneeze:" + timeBeforeSneeze + " " + "Time Before Tremble:" + timeBeforeTremble);
@@ -264,6 +263,9 @@ public class SomeHead : MonoBehaviour
 		foreach (GameObject granny in allGrannies) 
 		{
 			Collider2D grannyCollider = granny.GetComponent<Collider2D> ();
+
+            Vector2 vp = camera.WorldToViewportPoint(granny.transform.position);
+            bool grannyOutOfSight = vp.x < 0f || vp.x > 1f || vp.y < 0f || vp.y > 1f;
 
 			if (grannyCollider.IsTouching (aimerCollider)) 
 			{
