@@ -20,7 +20,15 @@ public class SomeHead : MonoBehaviour
 
 	public SomeGrannyGod grannyGod;
 	public RectTransform progressBarMask;
-	float progressBarInitRight;
+    public AudioClip preSneezeClip;
+    public AudioClip sneezeClip;
+    public AudioClip reactionFail;
+    public AudioClip reactionOK;
+
+    AudioSource manAudioSource;
+    AudioSource grannyAudioSource;
+
+    float progressBarInitRight;
 	float progressBarInitWidth;
 	public Text scoreText;
 	public Text lifeText;
@@ -85,7 +93,11 @@ public class SomeHead : MonoBehaviour
 
 
 	void Start () {
-		isTouching = false;
+        manAudioSource = gameObject.AddComponent<AudioSource>();
+        manAudioSource.playOnAwake = false;
+        grannyAudioSource = gameObject.AddComponent<AudioSource>();
+        grannyAudioSource.playOnAwake = false;
+        isTouching = false;
 		prevTouchCount = 0;
 		curTouchCount = 0;
 		score = 0;
@@ -283,9 +295,11 @@ public class SomeHead : MonoBehaviour
 			Collider2D grannyCollider = granny.GetComponent<Collider2D> ();
 
             Vector2 vp = camera.WorldToViewportPoint(granny.transform.position);
+            
             bool grannyOutOfSight = vp.x < 0f || vp.x > 1f || vp.y < 0f || vp.y > 1f;
+            Debug.Log(grannyOutOfSight);
 
-			if (grannyCollider.IsTouching (aimerCollider)) 
+            if (grannyCollider.IsTouching (aimerCollider) && !grannyOutOfSight) 
 			{
 				Debug.Log ("I hit a granny");
 				hitGrannies.Add (granny);
@@ -300,11 +314,11 @@ public class SomeHead : MonoBehaviour
 			foreach (GameObject granny in hitGrannies) 
 			{
 				granny.GetComponent<SpriteRenderer> ().sprite = grannyHit;
-			}
+                
+            }
+            yield return new WaitForSeconds (0.6f);
 
-			yield return new WaitForSeconds (0.6f);
-
-			head.GetComponent<SpriteRenderer>().sprite = normalSprite;
+            head.GetComponent<SpriteRenderer>().sprite = normalSprite;
 			aimer.SetActive (false);
 
 			foreach (GameObject granny in hitGrannies) 
@@ -313,8 +327,11 @@ public class SomeHead : MonoBehaviour
 			}
 
 			yield return new WaitForSeconds (0.5f);
-			// process lose condition
-			head.GetComponent<SpriteRenderer>().sprite = loseSprite;
+
+            grannyAudioSource.PlayOneShot(reactionFail);
+            Debug.Log("?");
+            // process lose condition
+            head.GetComponent<SpriteRenderer>().sprite = loseSprite;
 
 			yield return new WaitForSeconds (3.0f);
 			ProcessLoseCondition ();
@@ -328,10 +345,11 @@ public class SomeHead : MonoBehaviour
 				granny.GetComponent<Animator> ().enabled = true;
 				granny.GetComponent<Animator> ().speed = 0.2f;
 			}
+            yield return new WaitForSeconds (0.6f);
 
-			yield return new WaitForSeconds (0.6f);
-
-			head.GetComponent<SpriteRenderer>().sprite = normalSprite;
+            Debug.Log("??");
+            grannyAudioSource.PlayOneShot(reactionOK);
+            head.GetComponent<SpriteRenderer>().sprite = normalSprite;
 			aimer.SetActive (false);
 
 			yield return new WaitForSeconds (0.5f);
@@ -368,8 +386,10 @@ public class SomeHead : MonoBehaviour
 	{
 		if (spitCoroutineEntered)
 			return;
+        manAudioSource.clip = sneezeClip;
+        manAudioSource.Play();
 
-		Debug.Log ("Head Released");
+        Debug.Log ("Head Released");
 		nose.SetActive (false);
 
 		StartCoroutine (SneezeSomeGrannies ( autoLose ));
@@ -416,8 +436,11 @@ public class SomeHead : MonoBehaviour
 			{
 				sneezeStarted = true;
 				head.GetComponent<SpriteRenderer> ().sprite = trembleSprite;
-			}
-			yield return new WaitForEndOfFrame();
+                manAudioSource.clip = preSneezeClip;
+                manAudioSource.Play();
+
+            }
+            yield return new WaitForEndOfFrame();
 		}
 	}
 
